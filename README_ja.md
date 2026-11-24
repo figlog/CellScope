@@ -5,16 +5,30 @@ Jupyter Notebookを使わない、**ローカルで動くWebアプリケーシ�
 
 ## 起動方法
 
-### Windows 10/11（手動起動）
+### Windows 10/11（uvを使った起動）
 
-このGitHub版には `run_windows.bat` は含まれません。Windowsでも利用するには別途 Python 3.10 以降が必要です。
+Windowsでは `run_windows.bat` を使います。**Pythonを事前にインストールする必要はありません**が、`uv` のインストールが必要です。
+
+1. PowerShellでuvをインストールします（[公式インストール手順](https://docs.astral.sh/uv/getting-started/installation/)）。
+   ```powershell
+   irm https://astral.sh/uv/install.ps1 | iex
+   ```
+2. PowerShellを開き直して、`uv --version` でインストールを確認します。
+3. リポジトリをZIPで取得して展開するか、cloneします。
+4. **`run_windows.bat`** をダブルクリックして起動します。
+5. 初回はuvがPython 3.13の仮想環境 `.venv` を作成し、必要なライブラリをインストールします。ブラウザでCellScopeを操作します。
+6. 終了はコマンドプロンプトで **Ctrl+C** を押します。
+
+初回のPython・ライブラリのダウンロードにはインターネット接続が必要です。uvが見つからないなどのエラーが出るときは、コマンドプロンプトで `run_windows.bat` を実行するとメッセージを確認できます。
+
+**別の方法（Pythonがインストール済みの場合）**
 
 ```powershell
 py -3 -m pip install -r requirements.txt
 py -3 app.py
 ```
 
-Pythonが入っていないWindowsでは起動しません。現在のアプリは単一HTMLだけではなく、Python側で画像処理します。
+このアプリは単一HTMLだけではなく、ローカルのPythonで画像処理します。
 
 ### macOS
 
