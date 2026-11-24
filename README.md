@@ -2,10 +2,12 @@
 
 CellScopeは、顕微鏡画像（TIFF/PNG/JPEGなど）から細胞を計数する、**ローカル実行のブラウザGUI**です。画像のROIを指定し、細胞候補を自動検出したあと、GUI上で個数と採否を手動修正できます。A〜Dの4区画で細胞濃度（cells/mL）を計算し、CSV・注釈画像・作業再開用JSONを保存できます。
 
-- Python + NumPy + OpenCV のみ（Flask / Streamlit / Jupyter 不要）
+- ワンセルカウンターはこちらを使っています．左上にOneCellとロゴがある，使い捨てのものです．http://www.fpi1.co.jp/oc-c-s02.html
+- 厚さは0.10mmの製品ですので，違う場合には体積分を手動で補正してください．
+- 必要：Python + NumPy + OpenCV のみ（Flask / Streamlit / Jupyter 不要）
 - 画像は外部のクラウドに送信しません（`127.0.0.1` 上で動作）
-- `run_windows.bat` はこのリポジトリに含めません
-- 実験画像や過去の計数座標 `previous_data.json` も含めません
+- いまのところmac専用です
+
 
 ## macOSでの起動
 
