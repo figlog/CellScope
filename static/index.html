@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CellScope | 細胞計数盤カウンター</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none"><rect x="3" y="3" width="22" height="22" rx="6" stroke="currentColor" stroke-width="2"/><path d="M10 3v22M18 3v22M3 10h22M3 18h22" stroke="currentColor" stroke-opacity=".65" stroke-width="1.2"/><circle cx="14" cy="14" r="3" fill="currentColor"/></svg></div>
+      <div><div class="brand-title">CellScope <span class="brand-sub">/ Hemocytometer Counter</span></div><div class="brand-desc">細胞計数盤 · 4区画カウンター</div></div>
+    </div>
+    <div class="top-actions"><div class="privacy"><span class="status-dot"></span> このPC内で処理 · 外部送信なし</div><button id="btn-session" class="btn btn-quiet"> <span class="sym">↥</span> 作業を再開</button><button id="btn-export" class="btn btn-primary"> <span class="sym">↓</span> 結果を保存</button></div>
+  </header>
+
+  <div class="content">
+    <section class="work-area">
+      <div class="section-heading"><div><div class="eyebrow">MEASUREMENT WORKSPACE</div><h1>細胞計数</h1><p class="muted top-intro">画像を選び、区画の範囲を指定して細胞の数を確認します。</p></div><span class="protocol-tag">1 mm × 1 mm × 0.1 mm</span></div>
+
+      <div class="summary-strip">
+        <div class="summary-tile"><div class="summary-label">4区画 合計</div><div class="summary-number" id="total-count">—<span class="summary-unit"> 個</span></div><div class="summary-note" id="count-status">4区画を読み込んでください</div></div>
+        <div class="summary-tile"><div class="summary-label">細胞密度</div><div class="summary-number" id="concentration">—</div><div class="summary-note">cells / mL（希釈補正後）</div></div>
+        <div class="summary-tile tile-progress"><div class="summary-label">目視確認済み</div><div class="summary-number"><span id="confirmed-count">0</span><span class="progress-sub"> / 4 区画</span></div><div class="progress-bar"><span id="progress-bar"></span></div></div>
+      </div>
+
+      <div class="workspace-card">
+        <div class="workspace-top">
+          <div class="square-tabs" role="tablist" aria-label="計数区画">
+            <button data-tab="A" class="square-tab active"><span>A</span><small>—</small></button>
+            <button data-tab="B" class="square-tab"><span>B</span><small>—</small></button>
+            <button data-tab="C" class="square-tab"><span>C</span><small>—</small></button>
+            <button data-tab="D" class="square-tab"><span>D</span><small>—</small></button>
+          </div>
+          <div class="image-meta"><span id="display-image-name">画像未選択</span><span id="image-size"></span></div>
+        </div>
+        <div class="toolbar">
+          <div class="toolgroup" role="group" aria-label="画像操作">
+            <button data-mode="roi" class="tool active" title="ドラッグで計数範囲を指定"><span class="tool-icon">▣</span><span>範囲指定</span></button>
+            <button data-mode="add" class="tool" title="クリックした位置に細胞を追加"><span class="tool-icon">＋</span><span>追加</span></button>
+            <button data-mode="remove" class="tool" title="クリックした細胞の点を削除"><span class="tool-icon">−</span><span>削除</span></button>
+            <button data-mode="toggle" class="tool" title="クリックした点の採用/除外を切替"><span class="tool-icon">◉</span><span>採否</span></button>
+            <button data-mode="inc" class="tool" title="重なり個数を1増やす"><span class="tool-icon">2+</span><span>個数＋</span></button>
+            <button data-mode="dec" class="tool" title="重なり個数を1減らす"><span class="tool-icon">2−</span><span>個数−</span></button>
+            <button data-mode="pan" class="tool" title="ドラッグで画像を移動"><span class="tool-icon">✥</span><span>移動</span></button>
+          </div>
+          <div class="toolgroup zoom-controls"><button id="zoom-out" class="square-button" title="縮小">−</button><span id="zoom-label">100%</span><button id="zoom-in" class="square-button" title="拡大">＋</button><button id="zoom-reset" class="square-button reset-btn" title="画面に収める">⤢</button></div>
+        </div>
+        <div id="canvas-wrap" class="canvas-wrap">
+          <canvas id="count-canvas" aria-label="顕微鏡画像と計数点"></canvas>
+          <div id="image-placeholder" class="image-placeholder">
+            <div class="placeholder-glyph">◎</div>
+            <h2>画像から計数を始めましょう</h2>
+            <p>TIFF / PNG / JPG をドラッグ＆ドロップ<br>または右側の「画像を選ぶ」から読み込んでください。</p>
+            <button id="choose-main" class="btn btn-outline">画像を選ぶ</button>
+          </div>
+          <div id="roi-caption" class="roi-caption hidden">画像をドラッグして1 mm四方のROIを選択</div>
+          <div class="canvas-hint" id="canvas-hint">画像を読み込んでください</div>
+        </div>
+        <div class="workspace-footer"><div class="legend"><span><i class="dot dot-green"></i>採用</span><span><i class="dot dot-blue"></i>手動追加</span><span><i class="dot dot-red"></i>除外</span><span><i class="line line-cyan"></i>細線（採用）</span><span><i class="line line-red"></i>太線（除外）</span></div><div class="view-actions"><button id="undo" class="btn btn-text" title="直前の操作を戻す">↶ 元に戻す</button><button id="toggle-points" class="btn btn-text">◉ マーカー表示</button></div></div>
+      </div>
+
+      <div class="instructions-row"><span class="info-icon">i</span><span>細胞計数盤の説明書に従い、<b>細い格子線に触れる細胞は含め、太い格子線に触れる細胞は除外</b>します。境界線上の点は目視で確認してください。</span></div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="side-section upload-section"><div class="section-topline"><div><div class="eyebrow">01 / INPUT</div><h2>画像を読み込む</h2></div><span id="files-count" class="small-pill">0 枚</span></div>
+        <div class="upload-zone" id="dropzone" tabindex="0"><div class="upload-icon">↥</div><strong>画像ファイルを選択</strong><p>複数枚をまとめてアップロードできます</p><span class="upload-types">.tif · .tiff · .png · .jpg · .bmp</span><button id="choose-files" class="btn btn-outline btn-small">画像を選ぶ</button></div>
+        <input type="file" id="file-input" multiple accept="image/*,.tif,.tiff,.bmp" hidden>
+        <div id="upload-progress" class="upload-progress hidden"></div>
+        <div class="mapping-heading">現在の区画と画像</div>
+        <select id="image-select" class="field-select" aria-label="区画に割り当てる画像"><option value="">画像を選択してください</option></select>
+        <label class="field-label border-label" for="thick-select">太い格子線の位置（赤枠・除外する辺）</label>
+        <select id="thick-select" class="field-select">
+          <option value="right+bottom">右・下</option>
+          <option value="left+bottom">左・下</option>
+          <option value="left+top">左・上</option>
+          <option value="right+top">右・上</option>
+          <option value="left+right">左・右</option>
+          <option value="top+bottom">上・下</option>
+        </select>
+        <div id="previous-note" class="previous-note hidden"></div>
+      </div>
+
+      <div class="side-section count-section"><div class="section-topline"><div><div class="eyebrow">02 / DETECTION</div><h2>自動検出</h2></div><span class="tiny-help" title="検出は候補抽出です。必ず目視で確認してください。">?</span></div>
+        <label class="field-label" for="detect-mode">細胞の見え方</label>
+        <select id="detect-mode" class="field-select"><option value="purple">紫・青色に染色した細胞</option><option value="dark">明視野（暗い細胞）</option><option value="bright">明視野（明るい細胞）</option></select>
+        <div class="slider-title"><label class="field-label" for="threshold">検出しきい値</label><b id="threshold-value">18</b></div>
+        <input id="threshold" type="range" min="-5" max="45" value="18" step="1">
+        <div class="two-fields"><div><label class="field-label" for="min-area">最小面積（px²）</label><input id="min-area" type="number" min="1" value="55" class="field-input"></div><div><label class="field-label" for="max-area">最大面積（px²）</label><input id="max-area" type="number" min="1" value="2000" class="field-input"></div></div>
+        <label class="check-row"><input type="checkbox" id="estimate-multi"><span>面積から重なり個数を推定</span></label>
+        <button id="run-detect" class="btn btn-primary btn-full"><span class="btn-star">✧</span> この区画を自動検出</button>
+        <div class="tiny-note">再検出すると、この区画の現在のマーカーを置き換えます。</div>
+      </div>
+
+      <div class="side-section inspect-section"><div class="section-topline"><div><div class="eyebrow">03 / REVIEW</div><h2>計数の確認</h2></div><span class="count-badge" id="active-badge">A</span></div>
+        <div class="big-count"><span id="current-count">—</span><span>個</span></div>
+        <div class="count-details"><div><span>採用点数</span><b id="number-points">—</b></div><div><span>除外候補</span><b id="number-excluded">—</b></div></div>
+        <div class="roi-status" id="roi-status">計数範囲が未設定です</div>
+        <label class="verify-checkbox"><input type="checkbox" id="confirmed"><span><b>この区画を目視確認した</b><small>境界・重なり・気泡の誤検出を確認</small></span></label>
+      </div>
+
+      <div class="side-section result-section"><div class="section-topline"><div><div class="eyebrow">04 / RESULT</div><h2>結果の出力</h2></div></div>
+        <div class="dilution-row"><label for="dilution">希釈倍率</label><div><input id="dilution" type="number" class="field-input" min="0.000001" step="any" value="1"><span>倍</span></div></div>
+        <div class="formula">濃度 = (A+B+C+D) / 4 × 10⁴ × 希釈倍率</div>
+        <button id="export-secondary" class="btn btn-primary btn-full">↓ CSV・注釈画像・作業データを保存</button>
+        <button id="save-session" class="btn btn-secondary btn-full">作業状態（JSON）のみ保存</button>
+        <div class="tiny-note">「結果を保存」でZIP形式のファイルをダウンロードします。画像は含みません。</div>
+      </div>
+    </aside>
+  </div>
+  <footer class="bottom-bar"><span>CellScope v1.0 · Local research tool</span><span>区画容量 10⁻⁴ mL · 自動検出は暫定結果です</span></footer>
+</div>
+<input type="file" id="session-input" accept="application/json,.json" hidden>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/app.js"></script>
+</body>
+</html>
