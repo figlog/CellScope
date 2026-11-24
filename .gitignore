@@ -1,0 +1,23 @@
+# Local Python environment and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+
+# Local data, images and generated results
+previous_data.json
+*.tif
+*.tiff
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.webp
+*_results.zip
+*session.json
+*.csv
+
+# Excluded Windows launcher
+run_windows.bat
